@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가계부 — 스마트 재정 관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 사이드바 -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <span class="logo-icon">💰</span>
+      <span class="logo-text">가계부</span>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+  </div>
+  <ul class="nav-menu">
+    <li class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+      <span class="nav-icon">🏠</span><span class="nav-label">대시보드</span>
+    </li>
+    <li class="nav-item" data-page="income" onclick="showPage('income')">
+      <span class="nav-icon">📈</span><span class="nav-label">수입 관리</span>
+    </li>
+    <li class="nav-item" data-page="expense" onclick="showPage('expense')">
+      <span class="nav-icon">📉</span><span class="nav-label">지출 관리</span>
+    </li>
+    <li class="nav-item" data-page="calendar" onclick="showPage('calendar')">
+      <span class="nav-icon">📅</span><span class="nav-label">달력</span>
+    </li>
+    <li class="nav-item" data-page="stats" onclick="showPage('stats')">
+      <span class="nav-icon">📊</span><span class="nav-label">통계</span>
+    </li>
+    <li class="nav-item" data-page="budget" onclick="showPage('budget')">
+      <span class="nav-icon">🎯</span><span class="nav-label">예산 설정</span>
+    </li>
+  </ul>
+  <div class="sidebar-bottom">
+    <div class="month-selector">
+      <button onclick="changeMonth(-1)">‹</button>
+      <span id="currentMonthLabel"></span>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+  </div>
+</nav>
+
+<!-- 메인 콘텐츠 -->
+<main class="main-content" id="mainContent">
+
+  <!-- ===== 대시보드 ===== -->
+  <section id="page-dashboard" class="page active">
+    <div class="page-header">
+      <h1>대시보드</h1>
+      <button class="btn-primary" onclick="openModal('addTransaction')">+ 내역 추가</button>
+    </div>
+
+    <!-- 요약 카드 -->
+    <div class="summary-cards">
+      <div class="card card-income">
+        <div class="card-icon">💵</div>
+        <div class="card-info">
+          <span class="card-label">이번 달 수입</span>
+          <span class="card-amount" id="totalIncome">0원</span>
+        </div>
+      </div>
+      <div class="card card-expense">
+        <div class="card-icon">💸</div>
+        <div class="card-info">
+          <span class="card-label">이번 달 지출</span>
+          <span class="card-amount" id="totalExpense">0원</span>
+        </div>
+      </div>
+      <div class="card card-balance">
+        <div class="card-icon">🏦</div>
+        <div class="card-info">
+          <span class="card-label">잔액</span>
+          <span class="card-amount" id="totalBalance">0원</span>
+        </div>
+      </div>
+      <div class="card card-saving">
+        <div class="card-icon">🐷</div>
+        <div class="card-info">
+          <span class="card-label">저축률</span>
+          <span class="card-amount" id="savingRate">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 예산 진행률 -->
+    <div class="section-box">
+      <h2>📊 예산 소진율</h2>
+      <div id="budgetProgressList"></div>
+    </div>
+
+    <!-- 최근 내역 -->
+    <div class="section-box">
+      <h2>🕐 최근 거래 내역</h2>
+      <div id="recentTransactions"></div>
+    </div>
+  </section>
+
+  <!-- ===== 수입 관리 ===== -->
+  <section id="page-income" class="page">
+    <div class="page-header">
+      <h1>수입 관리</h1>
+      <button class="btn-primary" onclick="openModal('addTransaction', 'income')">+ 수입 추가</button>
+    </div>
+    <div class="section-box">
+      <div id="incomeList" class="transaction-list"></div>
+    </div>
+  </section>
+
+  <!-- ===== 지출 관리 ===== -->
+  <section id="page-expense" class="page">
+    <div class="page-header">
+      <h1>지출 관리</h1>
+      <button class="btn-primary" onclick="openModal('addTransaction', 'expense')">+ 지출 추가</button>
+    </div>
+    <!-- 카테고리 필터 -->
+    <div class="filter-bar" id="expenseFilterBar"></div>
+    <div class="section-box">
+      <div id="expenseList" class="transaction-list"></div>
+    </div>
+  </section>
+
+  <!-- ===== 달력 ===== -->
+  <section id="page-calendar" class="page">
+    <div class="page-header">
+      <h1>달력</h1>
+    </div>
+    <div class="section-box">
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+    <div class="section-box" id="calendarDayDetail" style="display:none;">
+      <h2 id="calendarDayTitle"></h2>
+      <div id="calendarDayList"></div>
+    </div>
+  </section>
+
+  <!-- ===== 통계 ===== -->
+  <section id="page-stats" class="page">
+    <div class="page-header">
+      <h1>통계</h1>
+    </div>
+    <div class="stats-grid">
+      <div class="section-box">
+        <h2>📉 카테고리별 지출</h2>
+        <div class="chart-container" id="categoryChart"></div>
+      </div>
+      <div class="section-box">
+        <h2>📆 월별 추이</h2>
+        <div class="chart-container" id="monthlyChart"></div>
+      </div>
+    </div>
+    <div class="section-box">
+      <h2>🏆 지출 TOP 5</h2>
+      <div id="topExpenses"></div>
+    </div>
+  </section>
+
+  <!-- ===== 예산 설정 ===== -->
+  <section id="page-budget" class="page">
+    <div class="page-header">
+      <h1>예산 설정</h1>
+      <button class="btn-primary" onclick="saveBudgets()">💾 저장</button>
+    </div>
+    <div class="section-box">
+      <p class="hint">카테고리별 월 예산을 설정하세요.</p>
+      <div id="budgetInputList" class="budget-input-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== 모달: 내역 추가/수정 ===== -->
+<div class="modal-overlay" id="modal-addTransaction" onclick="closeModalOutside(event, 'addTransaction')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">내역 추가</h2>
+      <button class="modal-close" onclick="closeModal('addTransaction')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="type-tabs">
+        <button id="tab-income" class="type-tab" onclick="setType('income')">💵 수입</button>
+        <button id="tab-expense" class="type-tab active" onclick="setType('expense')">💸 지출</button>
+      </div>
+      <div class="form-group">
+        <label>날짜</label>
+        <input type="date" id="txDate">
+      </div>
+      <div class="form-group">
+        <label>금액 (원)</label>
+        <input type="number" id="txAmount" placeholder="예: 50000" min="0">
+      </div>
+      <div class="form-group">
+        <label>카테고리</label>
+        <select id="txCategory"></select>
+      </div>
+      <div class="form-group">
+        <label>메모</label>
+        <input type="text" id="txMemo" placeholder="선택 입력">
+      </div>
+      <input type="hidden" id="txEditId">
+      <button class="btn-primary full-width" onclick="saveTransaction()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
